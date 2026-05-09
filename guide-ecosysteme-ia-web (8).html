@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide IA & Web — L'écosystème en couches</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #5B4FBE;
+    --purple-light: #EEE9FF;
+    --purple-dark: #3D3490;
+    --teal: #0E8A7B;
+    --teal-light: #D6F5F1;
+    --coral: #C94B2E;
+    --coral-light: #FDEEE9;
+    --amber: #B87118;
+    --amber-light: #FDF3E1;
+    --green: #2A7A4A;
+    --green-light: #E4F5EC;
+    --gray: #4A4A54;
+    --gray-light: #F0EFF5;
+    --text: #1A1A2E;
+    --text-muted: #6B6B80;
+    --bg: #FAFAF8;
+    --white: #FFFFFF;
+    --border: #E8E6F0;
+    --shadow: 0 2px 16px rgba(30,20,80,0.07);
+    --shadow-hover: 0 8px 32px rgba(30,20,80,0.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #1A1A2E 0%, #2D2760 60%, #1A1A2E 100%);
+    color: white;
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(91,79,190,0.4) 0%, transparent 60%),
+                radial-gradient(ellipse at 75% 20%, rgba(14,138,123,0.3) 0%, transparent 50%);
+  }
+  header .inner { position: relative; z-index: 1; max-width: 700px; margin: auto; }
+  header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    color: rgba(255,255,255,0.8);
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.15;
+    margin-bottom: 16px;
+    color: white;
+  }
+  header p {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 300;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ── NAV PILLS ── */
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--purple); border-bottom-color: var(--purple); }
+  nav a.active { color: var(--purple); border-bottom-color: var(--purple); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  section { padding: 64px 0 48px; }
+  section + section { border-top: 1px solid var(--border); }
+
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--purple);
+    margin-bottom: 12px;
+  }
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--purple);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.2;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .section-intro {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    font-weight: 300;
+    max-width: 620px;
+  }
+
+  /* ── SCHEMA ── */
+  .schema-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: var(--shadow);
+  }
+  .schema-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 28px;
+    letter-spacing: 0.05em;
+  }
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .flow-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+    color: var(--text-muted);
+    font-size: 18px;
+    position: relative;
+  }
+  .flow-arrow::after {
+    content: '↓';
+    font-size: 20px;
+    opacity: 0.4;
+  }
+  .flow-arrow.split::after { display: none; }
+  .flow-arrow.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    max-width: 500px;
+    height: 40px;
+    position: relative;
+  }
+  .flow-arrow.split::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 25%; right: 25%;
+    height: 1px;
+    background: var(--border);
+  }
+  .split-line {
+    display: flex;
+    justify-content: center;
+    padding-top: 2px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    font-size: 18px;
+  }
+
+  /* Node cards */
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1.5px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    min-width: 120px;
+    position: relative;
+  }
+  .node:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .node .icon { font-size: 18px; margin-bottom: 2px; }
+  .node .name { font-size: 13px; font-weight: 500; line-height: 1.2; }
+  .node .sub { font-size: 11px; opacity: 0.75; margin-top: 2px; line-height: 1.2; }
+  .node.wide { min-width: 260px; }
+  .node.full { width: 100%; max-width: 380px; }
+
+  /* Colors */
+  .c-purple { background: var(--purple-light); border-color: var(--purple); color: var(--purple-dark); }
+  .c-teal   { background: var(--teal-light);   border-color: var(--teal);   color: var(--teal); }
+  .c-coral  { background: var(--coral-light);   border-color: var(--coral);  color: var(--coral); }
+  .c-amber  { background: var(--amber-light);   border-color: var(--amber);  color: var(--amber); }
+  .c-green  { background: var(--green-light);   border-color: var(--green);  color: var(--green); }
+  .c-gray   { background: var(--gray-light);    border-color: #C0BDD4;       color: var(--gray); }
+  .c-blue   { background: #E8F1FF;              border-color: #3A6FD8;       color: #1A3F8A; }
+
+  /* Group label */
+  .group-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 12px;
+    margin-bottom: 8px;
+  }
+  .group-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 14px 12px 12px;
+    gap: 10px;
+    position: relative;
+  }
+
+  /* ── TOOLTIP / MODAL ── */
+  #tooltip {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    max-width: 480px;
+    width: calc(100% - 48px);
+    z-index: 9999;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    line-height: 1.6;
+    animation: fadeUp 0.2s ease;
+  }
+  #tooltip .tt-title { font-weight: 500; font-size: 15px; margin-bottom: 4px; }
+  #tooltip .tt-close {
+    position: absolute; top: 10px; right: 14px;
+    cursor: pointer; opacity: 0.5; font-size: 18px;
+    background: none; border: none; color: white;
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+  /* ── CONCEPTS GRID ── */
+  .concepts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .concept-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .concept-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+  .concept-card .cc-tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .concept-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .concept-card p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .concept-card .cc-example {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-style: italic;
+    display: none;
+  }
+  .concept-card.expanded .cc-example { display: block; }
+  .concept-card .cc-toggle {
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+  }
+
+  /* Card accent colors */
+  .cc-purple::before { background: var(--purple); }
+  .cc-purple .cc-tag { color: var(--purple); }
+  .cc-purple .cc-toggle { color: var(--purple); }
+  .cc-purple .cc-example { background: var(--purple-light); color: var(--purple-dark); }
+
+  .cc-teal::before { background: var(--teal); }
+  .cc-teal .cc-tag { color: var(--teal); }
+  .cc-teal .cc-toggle { color: var(--teal); }
+  .cc-teal .cc-example { background: var(--teal-light); color: var(--teal); }
+
+  .cc-coral::before { background: var(--coral); }
+  .cc-coral .cc-tag { color: var(--coral); }
+  .cc-coral .cc-toggle { color: var(--coral); }
+  .cc-coral .cc-example { background: var(--coral-light); color: var(--coral); }
+
+  .cc-amber::before { background: var(--amber); }
+  .cc-amber .cc-tag { color: var(--amber); }
+  .cc-amber .cc-toggle { color: var(--amber); }
+  .cc-amber .cc-example { background: var(--amber-light); color: var(--amber); }
+
+  .cc-green::before { background: var(--green); }
+  .cc-green .cc-tag { color: var(--green); }
+  .cc-green .cc-toggle { color: var(--green); }
+  .cc-green .cc-example { background: var(--green-light); color: var(--green); }
+
+  .cc-gray::before { background: var(--gray); }
+  .cc-gray .cc-tag { color: var(--gray); }
+  .cc-gray .cc-toggle { color: var(--gray); }
+  .cc-gray .cc-example { background: var(--gray-light); color: var(--gray); }
+
+  /* ── CONFUSIONS ── */
+  .confusions { display: flex; flex-direction: column; gap: 12px; }
+  .confusion-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .confusion-wrong {
+    font-size: 14px;
+    color: var(--coral);
+    font-weight: 500;
+  }
+  .confusion-wrong::before { content: '✗ '; }
+  .confusion-right {
+    font-size: 14px;
+    color: var(--green);
+    font-weight: 500;
+  }
+  .confusion-right::before { content: '✓ '; }
+  .confusion-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .check-item:hover { box-shadow: var(--shadow); }
+  .check-item.done { opacity: 0.5; text-decoration: line-through; }
+  .check-num {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--purple-light);
+    color: var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    flex-shrink: 0;
+  }
+  .check-item.done .check-num { background: var(--green-light); color: var(--green); }
+  .check-content { flex: 1; }
+  .check-content strong { font-size: 14px; font-weight: 500; display: block; margin-bottom: 2px; }
+  .check-content span { font-size: 12px; color: var(--text-muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px 24px;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    header { padding: 40px 20px 36px; }
+    nav { padding: 0 16px; }
+    .container { padding: 0 16px; }
+    section { padding: 48px 0 36px; }
+    .confusion-row { grid-template-columns: 1fr; }
+    .confusion-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <div class="badge">Guide débutant · IA & Web</div>
+    <h1>L'écosystème IA et web<br><em>en couches</em></h1>
+    <p>De l'idée au paiement — chaque brique a son rôle. Clique sur n'importe quel concept pour en savoir plus.</p>
+  </div>
+</header>
+
+<nav id="main-nav">
+  <a href="#schema">🗺 Schéma</a>
+  <a href="#ia">🧠 IA & Agents</a>
+  <a href="#code">🖥 Code & Web</a>
+  <a href="#nouveau">🆕 Nouveaux concepts</a>
+  <a href="#publication">🚀 Publication</a>
+  <a href="#confusions">⚠️ Confusions</a>
+  <a href="#checklist">✅ Checklist</a>
+</nav>
+
+<!-- ═══════════ SCHEMA ═══════════ -->
+<section id="schema">
+  <div class="container">
+    <div class="section-label">Vue d'ensemble</div>
+    <h2>Le flux complet</h2>
+    <p class="section-intro">Une application web moderne n'est jamais un seul outil. C'est une chaîne de couches, chacune avec son rôle. Clique sur chaque brique pour la comprendre.</p>
+
+    <div class="schema-wrap">
+      <div class="schema-title">De ton idée à l'argent dans ta poche ↓</div>
+      <div class="flow">
+
+        <!-- TOI -->
+        <div class="flow-row">
+          <div class="node c-purple full" onclick="showTip('👤 Toi','La personne qui a une idée. Tu n\'as pas besoin de savoir coder pour démarrer — tu as juste besoin d\'une bonne idée et d\'un prompt clair.')">
+            <span class="icon">👤</span>
+            <span class="name">Toi</span>
+            <span class="sub">La personne qui a une idée</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- PROMPT -->
+        <div class="flow-row">
+          <div class="node c-purple full" onclick="showTip('💬 Prompt','Le brief que tu donnes à l\'IA. Plus il est précis, plus la réponse est utile. C\'est le volant du système — tout dépend de lui.')">
+            <span class="icon">💬</span>
+            <span class="name">Prompt</span>
+            <span class="sub">Le brief donné à l'IA</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- IA -->
+        <div class="flow-row">
+          <div class="node c-teal wide" onclick="showTip('🧠 IA — Claude / GPT (LLM)','Claude et GPT sont des LLM — Large Language Models, Modèles de Langage de Grande Taille. C\'est le terme technique pour cette catégorie d\'IA. LLM = la catégorie. Claude, GPT, Gemini = les marques. Comme dire voiture vs Tesla. Ils lisent du texte, en produisent, expliquent, analysent et génèrent du code.')">
+            <span class="icon">🧠</span>
+            <span class="name">IA — Claude / GPT</span>
+            <span class="sub">LLM · réfléchit, rédige, génère</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- AGENT + SQUAD + SKILLS -->
+        <div class="flow-row" style="gap:8px;width:100%;">
+          <div class="node c-teal" onclick="showTip('🤖 Agent','Un agent planifie, appelle des outils, garde de la mémoire et accomplit un travail en plusieurs étapes. Pas juste une réponse — une série d\'actions.')">
+            <span class="icon">🤖</span>
+            <span class="name">Agent</span>
+            <span class="sub">Planifie & exécute</span>
+          </div>
+          <div class="node c-teal" onclick="showTip('👥 Squad','Une équipe d\'agents spécialisés qui travaillent ensemble. Un agent écrit, un autre relit, un autre vérifie la qualité.')">
+            <span class="icon">👥</span>
+            <span class="name">Squad</span>
+            <span class="sub">Équipe d'agents</span>
+          </div>
+          <div class="node c-teal" onclick="showTip('⚙️ Skills','Des briques réutilisables avec des instructions déjà prêtes. Comme une fiche de procédure : même tâche, même qualité, à chaque fois.')">
+            <span class="icon">⚙️</span>
+            <span class="name">Skills</span>
+            <span class="sub">Briques réutilisables</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- OUTILS -->
+        <div class="group-wrap">
+          <span class="group-label">Outils</span>
+          <div class="flow-row" style="gap:8px;">
+            <div class="node c-blue" onclick="showTip('🔌 MCP','Un connecteur — mais uniquement dans le monde de l\'IA. Pour connecter deux logiciels entre eux on utilise une API classique, ça existe depuis 30 ans. Le MCP a été inventé avec l\'ère des agents IA pour qu\'une IA puisse se brancher à un outil et comprendre ce qu\'elle peut faire dedans. Les connecteurs Notion, Google Drive, Slack que tu vois dans Claude — ce sont des MCP.')">
+              <span class="name">MCP</span>
+              <span class="sub">Connecteur IA uniquement</span>
+            </div>
+            <div class="node c-blue" onclick="showTip('🔗 API','Interface qui permet à deux logiciels de se parler. Comme un serveur de restaurant : tu passes une commande selon des règles connues, il te ramène le plat.')">
+              <span class="name">API</span>
+              <span class="sub">Dialogue entre logiciels</span>
+            </div>
+            <div class="node c-blue" onclick="showTip('⌨️ CLI — Command Line Interface','Command = ordre · Line = ligne de texte · Interface = façon de parler à ton ordinateur. Ton terminal EST une CLI. Au lieu de cliquer sur des boutons, tu tapes des ordres en texte. Exemple : vercel deploy = dis à Vercel de mettre ton site en ligne.')">
+              <span class="name">CLI</span>
+              <span class="sub">Commandes en terminal</span>
+            </div>
+            <div class="node c-blue" onclick="showTip('🤖 Codex / Claude Code','Codex c\'est l\'outil de codage d\'OpenAI. Claude Code c\'est l\'équivalent chez Anthropic — même idée, marques différentes. Il lit ton projet, modifie tes fichiers, lance des commandes. Un technicien qui travaille directement dans ta cuisine.')">
+              <span class="name">Codex</span>
+              <span class="sub">Agent de codage</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- CODE -->
+        <div class="group-wrap">
+          <span class="group-label">Code</span>
+          <div class="flow-row" style="gap:8px;">
+            <div class="node c-coral" onclick="showTip('HTML','Structure de la page : titres, paragraphes, formulaires, boutons. C\'est l\'ossature du bâtiment.')">
+              <span class="name">HTML</span>
+              <span class="sub">Structure</span>
+            </div>
+            <div class="node c-coral" onclick="showTip('CSS','Présentation visuelle : couleurs, polices, espacements. La décoration intérieure de ta boutique.')">
+              <span class="name">CSS</span>
+              <span class="sub">Apparence</span>
+            </div>
+            <div class="node c-coral" onclick="showTip('JavaScript','Comportement dynamique : boutons qui réagissent, formulaires qui valident, données qui se chargent. La porte automatique de la boutique.')">
+              <span class="name">JS</span>
+              <span class="sub">Comportement</span>
+            </div>
+            <div class="node c-coral" onclick="showTip('React & Next.js','React = boîte de Lego pour construire ton interface. Next.js = même boîte mais avec les parties chiantes déjà pré-assemblées : pages, vitesse, référencement Google. Dans Claude Code tu ne choisis pas — il prend Next.js automatiquement. Tu conduis, le moteur est invisible.')">
+              <span class="name">React / Next.js</span>
+              <span class="sub">Composants & framework</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow split">
+          <span class="split-line">↙</span>
+          <span class="split-line">↘</span>
+        </div>
+
+        <!-- FRONTEND + BACKEND -->
+        <div class="flow-row" style="gap:10px;">
+          <div class="node c-amber" style="min-width:180px;flex:1;" onclick="showTip('🖥 Frontend','La partie visible par l\'utilisateur. La vitrine, les rayons, les boutons sur lesquels le client clique.')">
+            <span class="icon">🖥</span>
+            <span class="name">Frontend</span>
+            <span class="sub">Ce que l'utilisateur voit</span>
+          </div>
+          <div class="node c-amber" style="min-width:180px;flex:1;" onclick="showTip('⚙️ Backend','La partie serveur invisible. Logique métier, autorisations, échanges avec la base de données. L\'arrière-boutique.')">
+            <span class="icon">⚙️</span>
+            <span class="name">Backend</span>
+            <span class="sub">Logique serveur & sécurité</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- SUPABASE + DB -->
+        <div class="flow-row" style="gap:10px;">
+          <div class="node c-green" style="flex:1;" onclick="showTip('🗄 Supabase','L\'endroit où vivent toutes les données de ton projet — utilisateurs, commandes, rendez-vous, paiements. Quand tu fermes ton site et que tu le reouvres le lendemain, les données sont toujours là. Claude Code s\'y connecte directement et crée tout pour toi.')">
+            <span class="icon">🗄</span>
+            <span class="name">Supabase</span>
+            <span class="sub">Base + Auth + API prêts</span>
+          </div>
+          <div class="node c-green" style="flex:1;" onclick="showTip('📦 Base de données','Collection organisée d\'informations : clients, commandes, rendez-vous, paiements. Le grand registre de ta boutique.')">
+            <span class="icon">📦</span>
+            <span class="name">Base de données</span>
+            <span class="sub">Stocke tout</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- GIT + ENV + NPM -->
+        <div class="group-wrap">
+
+          <div class="flow-row" style="gap:8px;">
+            <div class="node c-gray" onclick="showTip('📒 Git & GitHub','Git = carnet de chantier qui enregistre chaque modification. GitHub = armoire à plans en ligne. Vercel se connecte à GitHub et déploie automatiquement à chaque push.')">
+              <span class="name">Git & GitHub</span>
+              <span class="sub">Versioning & historique</span>
+            </div>
+            <div class="node c-gray" onclick="showTip('🔑 Variables d\'env.','Secrets stockés hors du code : clés API, mots de passe, clés Stripe. On ne les met JAMAIS dans le code — sinon ils se retrouvent sur GitHub, visibles de tous.')">
+              <span class="name">Variables d'env.</span>
+              <span class="sub">Secrets & clés API</span>
+            </div>
+            <div class="node c-gray" onclick="showTip('📦 npm','Un supermarché de briques de code sur npmjs.com — 2 millions de briques disponibles. React, Stripe, Next.js s\'installent tous via npm. Claude Code va y piocher automatiquement ce dont il a besoin. Tu ne touches jamais au dossier node_modules où tout est rangé — c\'est le moteur sous le capot.')">
+              <span class="name">npm</span>
+              <span class="sub">Gestion des dépendances</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- VERCEL -->
+        <div class="flow-row">
+          <div class="node c-purple full" onclick="showTip('🚀 Vercel','Un hébergeur automatique. Tu sauvegardes ton code sur GitHub, Vercel détecte le changement et publie ton site en quelques secondes. DNS, sécurité, serveurs — il gère tout en arrière-plan. Tu ne touches à rien.')">
+            <span class="icon">🚀</span>
+            <span class="name">Vercel</span>
+            <span class="sub">Déploiement automatique · met le site en ligne</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow"></div>
+
+        <!-- DOMAINE -->
+        <div class="flow-row">
+          <div class="node c-purple full" onclick="showTip('🌐 Nom de domaine + DNS','L\'adresse lisible par un humain : monsite.com. Le DNS traduit ce nom en adresse IP. Un domaine se renouvelle — on le loue plus qu\'on ne l\'achète.')">
+            <span class="icon">🌐</span>
+            <span class="name">Nom de domaine + DNS</span>
+            <span class="sub">L'adresse lisible · monsite.com</span>
+          </div>
+        </div>
+
+        <div class="flow-arrow split">
+          <span class="split-line">↙</span>
+          <span class="split-line">↘</span>
+        </div>
+
+        <!-- STRIPE + WEBHOOK + PIXEL -->
+        <div class="flow-row" style="gap:10px;">
+          <div class="node c-coral" style="flex:1;" onclick="showTip('💳 Stripe','Plateforme de paiement : paiements ponctuels, abonnements, parcours de paiement hébergés. Le terminal de carte bancaire + la caisse + la logique de facturation.')">
+            <span class="icon">💳</span>
+            <span class="name">Stripe</span>
+            <span class="sub">Paiements & abonnements</span>
+          </div>
+          <div class="node c-coral" style="flex:1;" onclick="showTip('🔔 Webhook','Le restaurant qui t\'envoie un SMS quand ta pizza est prête — au lieu que tu appelles toutes les 5 minutes. Stripe t\'envoie un signal automatique dès qu\'un paiement réussit, ton site réagit immédiatement sans avoir rien demandé.')">
+            <span class="icon">🔔</span>
+            <span class="name">Webhook</span>
+            <span class="sub">Stripe notifie ton app</span>
+          </div>
+          <div class="node c-coral" style="flex:1;" onclick="showTip('👁 Pixel Meta','Un bout de code JS installé sur ton site qui envoie des données à Meta (Facebook/Instagram). Il track les visiteurs, leurs actions, leurs achats — pour que tes pubs soient ciblées au millimètre.')">
+            <span class="icon">👁</span>
+            <span class="name">Pixel Meta</span>
+            <span class="sub">Tracking pub Facebook/Insta</span>
+          </div>
+        </div>
+
+      </div><!-- /flow -->
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> IA & déploiement</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div> Agents & outils</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--coral)"></div> Code & paiement</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Frontend & backend</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Données</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--gray)"></div> Concepts essentiels</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ IA ═══════════ -->
+<section id="ia">
+  <div class="container">
+    <div class="section-label">Couche 1</div>
+    <h2>IA & Agents</h2>
+    <p class="section-intro">Les cerveaux du système. Clique sur "Exemple" pour voir un cas concret.</p>
+    <div class="concepts-grid">
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">🧠 Modèle de langage</div>
+        <h3>IA — Claude / GPT</h3>
+        <p>Lit du texte, en produit, explique, analyse et génère du code. Un assistant ultra-rapide qui a toujours besoin d'une consigne.</p>
+        <div class="cc-example">« Rédige une page d'accueil pour un cabinet médical, ton rassurant, 500 mots, avec un appel à l'action final. »</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">💬 Instruction</div>
+        <h3>Prompt</h3>
+        <p>Le message d'instruction que tu envoies au modèle. Plus il a du contexte, un rôle, des contraintes et un format attendu, meilleure est la réponse.</p>
+        <div class="cc-example">❌ « Écris une page d'accueil »<br>✓ « Tu es copywriter. Écris une page pour un cabinet médical, ton rassurant, 500 mots, bouton Prendre rendez-vous à la fin. »</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">🤖 Exécuteur</div>
+        <h3>Agent</h3>
+        <p>Planifie, appelle des outils, garde de la mémoire et accomplit un travail en plusieurs étapes. Pas juste une réponse — une série d'actions.</p>
+        <div class="cc-example">« Lis ce dépôt, trouve le bug, modifie les fichiers, lance les tests, résume les changements. » — 5 étapes, 1 seule demande.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">👥 Multi-agent</div>
+        <h3>Squad</h3>
+        <p>Une équipe d'agents spécialisés qui se passent le relais. Un agent écrit, un autre relit, un autre vérifie la qualité.</p>
+        <div class="cc-example">Agent « brief » → Agent « maquette » → Agent « code » → Agent « QA ». Chacun fait sa partie dans l'ordre.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">🧠 La technologie derrière</div>
+        <h3>LLM</h3>
+        <p>LLM veut dire Large Language Model — Modèle de Langage de Grande Taille. C'est le terme technique pour désigner les IA comme Claude, GPT, Gemini. Quand tu entends LLM, pense simplement : "une IA capable de lire et produire du texte à grande échelle". Claude est un LLM. GPT est un LLM. C'est la technologie derrière tout le reste.</p>
+        <div class="cc-example">"J'utilise un LLM pour générer mes textes de carrousels" = "J'utilise Claude ou GPT". LLM c'est le nom de la catégorie, Claude et GPT sont des marques. Exactement comme dire "voiture" vs "Tesla".</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-teal" onclick="toggleCard(this)">
+        <div class="cc-tag">⚙️ Prompt élaboré & sauvegardé</div>
+        <h3>Skills</h3>
+        <p>Un skill c'est un prompt élaboré et sauvegardé pour être réutilisé. Au lieu de réécrire tes instructions à chaque fois, tu les sauvegardes une fois comme skill — et tu l'appelles en un mot, toujours avec la même qualité. Dans les agents avancés, un skill peut aussi contenir des fichiers de référence et des règles spécifiques.</p>
+        <div class="cc-example">Au lieu de réécrire "Tu es expert en revue de code, vérifie la sécurité, la lisibilité et les performances, rends un rapport en 3 sections..." — tu sauvegardes ça une fois comme skill "revue de code" et tu l'appelles en un mot à chaque fois.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-purple" onclick="toggleCard(this)">
+        <div class="cc-tag">🔑 Coût</div>
+        <h3>Tokens</h3>
+        <p>Un "morceau" de texte traité par le modèle. Tout ce que tu envoies + tout ce que le modèle répond consomme des tokens. Ce n'est pas l'API qui facture — c'est le fournisseur derrière (Anthropic, OpenAI...) qui compte les tokens consommés et envoie la facture.</p>
+        <div class="cc-example">Tu envoies 2 000 tokens, le modèle répond 800 tokens → 2 800 tokens consommés. Surveille pour rester sous la limite et maîtriser le coût.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CODE ═══════════ -->
+<section id="code">
+  <div class="container">
+    <div class="section-label">Couche 2</div>
+    <h2>Code & Web</h2>
+    <p class="section-intro">Les briques qui construisent ce que l'utilisateur voit et touche.</p>
+    <div class="concepts-grid">
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">🏗 Structure</div>
+        <h3>HTML</h3>
+        <p>Définit la structure d'une page : titres, paragraphes, formulaires, boutons. L'ossature du bâtiment.</p>
+        <div class="cc-example">« ici, c'est un titre » · « ici, c'est un champ e-mail » · « ici, c'est un bouton ». Sans HTML, rien à afficher.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">🎨 Apparence</div>
+        <h3>CSS</h3>
+        <p>Décrit la présentation visuelle : couleurs, polices, espacements, colonnes. La décoration intérieure de ta boutique.</p>
+        <div class="cc-example">Un bouton bleu avec des coins arrondis, un texte centré, une page en deux colonnes. Même HTML, aspect totalement différent.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">⚡ Comportement</div>
+        <h3>JavaScript</h3>
+        <p>Ajoute le comportement dynamique : boutons qui réagissent, formulaires qui valident, données qui se chargent sans recharger la page.</p>
+        <div class="cc-example">La validation d'un formulaire, l'ouverture d'une fenêtre modale, le chargement d'une liste d'articles. La porte automatique.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">🧩 Composants</div>
+        <h3>React & Next.js</h3>
+        <p>React c'est une boîte de Lego pour construire ton interface. Next.js c'est la même boîte mais avec les parties chiantes déjà pré-assemblées — pages, vitesse, référencement Google. Dans Claude Code tu ne choisis jamais : il prend Next.js automatiquement. Tu conduis, le moteur est invisible.</p>
+        <div class="cc-example">Tu dis à Claude Code "crée un site de réservation" — il choisit Next.js tout seul. Tu ne vois jamais le mot React. Exactement comme monter dans une voiture sans savoir si c'est essence ou diesel.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-amber" onclick="toggleCard(this)">
+        <div class="cc-tag">👀 Visible</div>
+        <h3>Frontend</h3>
+        <p>La partie visible et manipulée par l'utilisateur. La vitrine, les rayons, les boutons sur lesquels le client clique.</p>
+        <div class="cc-example">Page d'accueil, fiche produit, formulaire de contact, écran de réservation. Tout ce que l'œil voit.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-amber" onclick="toggleCard(this)">
+        <div class="cc-tag">🔒 Invisible</div>
+        <h3>Backend</h3>
+        <p>Ce n'est pas un outil — c'est une zone, comme la cuisine d'un restaurant. L'utilisateur ne la voit jamais mais c'est là que tout se passe : vérifier ton mot de passe, enregistrer ta commande, envoyer l'email de confirmation, activer ton abonnement. Le frontend affiche. Le backend décide, vérifie, enregistre, envoie.</p>
+        <div class="cc-example">Tu cliques "connexion" → le backend vérifie ton mot de passe. Tu passes une commande → le backend l'enregistre. Stripe confirme un paiement → le backend active ton abonnement. Tout ça invisible, tout ça instantané.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-green" onclick="toggleCard(this)">
+        <div class="cc-tag">📦 Stockage</div>
+        <h3>Base de données</h3>
+        <p>Collection organisée d'informations qui survivent au redémarrage de l'application. Le grand registre de ta boutique.</p>
+        <div class="cc-example">Table users, table appointments, table payments. Qui sont tes clients, quels produits existent, quelles commandes ont été passées.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-green" onclick="toggleCard(this)">
+        <div class="cc-tag">🗄 Clé en main</div>
+        <h3>Supabase</h3>
+        <p>L'endroit où vivent toutes les données de ton projet — tes utilisateurs, leurs commandes, leurs rendez-vous, leurs paiements. Quand tu fermes ton site et que tu le reouvres le lendemain, les données sont toujours là. Supabase les garde, les sécurise et les rend accessibles à ton app instantanément.</p>
+        <div class="cc-example">Quelqu'un s'inscrit sur ton site → son nom et email sont sauvegardés dans Supabase. Il revient 3 mois plus tard → Supabase s'en souvient. Tu fermes ton ordinateur → les données restent. C'est le registre permanent de ta boutique.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ NOUVEAUX CONCEPTS ═══════════ -->
+<section id="nouveau">
+  <div class="container">
+    <div class="section-label">Concepts essentiels</div>
+    <h2>Souvent oubliés, toujours nécessaires</h2>
+    <p class="section-intro">Tout débutant tombe sur ces 4 concepts dans les premières heures. Sans les connaître, on bloque.</p>
+    <div class="concepts-grid">
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">📒 La mémoire de ton projet</div>
+        <h3>Git & GitHub</h3>
+        <p>Git c'est la mémoire de ce que tu construis. Chaque sauvegarde s'appelle un commit. Si tu casses quelque chose, tu remontes dans la mémoire et tu repars de là où tout allait bien — comme un Ctrl+Z surpuissant qui n'oublie jamais rien, même 6 mois plus tard. GitHub c'est cette même mémoire sauvegardée en ligne — si ton ordi tombe en panne, ton projet est toujours là. Et ça existait bien avant l'IA : Git a 20 ans.</p>
+        <div class="cc-example">Lundi ton site marche → commit (photo). Mercredi tu casses tout → tu dis à Git "ramène-moi à lundi" → tout revient exactement comme avant. GitHub le stocke en ligne et Vercel se reconnecte automatiquement pour republier.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">🔑 Sécurité</div>
+        <h3>Variables d'environnement</h3>
+        <p>Secrets stockés hors du code : clés API, mots de passe, clés Stripe. On ne les met JAMAIS dans le code — sinon ils se retrouvent sur GitHub, visibles de tous.</p>
+        <div class="cc-example">STRIPE_SECRET_KEY=sk_live_xxx · NEXT_PUBLIC_SUPABASE_URL=https://xyz.supabase.co · OPENAI_API_KEY=sk-xxx — dans un fichier .env.local que Git ignore.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">🔔 Le service qui t'appelle</div>
+        <h3>Webhook</h3>
+        <p>Imagine que tu commandes une pizza. Sans webhook : tu appelles le restaurant toutes les 5 minutes "c'est prêt ?" "non" "c'est prêt ?" "non". Avec webhook : le restaurant t'envoie un SMS dès que la pizza sort du four. Tu ne demandes rien — on te prévient au bon moment. Stripe fait pareil : dès qu'un paiement réussit, il envoie un signal automatique à ton site qui réagit immédiatement.</p>
+        <div class="cc-example">Client paie → Stripe envoie un webhook → ton site reçoit le signal → active l'abonnement → envoie l'email de confirmation. Tout ça en 2 secondes, sans que tu aies rien demandé.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">📦 Supermarché de code</div>
+        <h3>npm</h3>
+        <p>Un supermarché de briques de code disponibles sur npmjs.com — 2 millions de briques créées par des développeurs du monde entier. React, Stripe, Next.js s'installent tous via npm. Claude Code va y piocher automatiquement ce dont il a besoin, sans te demander. Tu ne touches jamais au dossier node_modules où tout est rangé. Et oui : tu peux créer ta propre brique et la publier pour que d'autres l'utilisent.</p>
+        <div class="cc-example">Claude Code construit ton app de réservation → il installe automatiquement Next.js, Supabase, Stripe depuis npmjs.com → tout arrive dans node_modules → tu n'ouvres jamais ce dossier. C'est le moteur sous le capot.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">🔌 Connecteur IA uniquement</div>
+        <h3>MCP</h3>
+        <p>MCP c'est un connecteur — mais uniquement dans le monde de l'IA. Pour connecter deux logiciels entre eux on utilise une API classique — ça existe depuis 30 ans. Le MCP a été inventé avec l'ère des agents IA, pour qu'une IA puisse se brancher à un outil et comprendre ce qu'elle peut faire dedans. Les connecteurs Notion, Google Drive, Slack que tu vois dans Claude — ce sont des MCP. Tu peux créer le tien pour connecter Claude à ta propre plateforme.</p>
+        <div class="cc-example">Sans MCP : ton backend appelle l'API Anthropic — c'est du code qui décide. Avec MCP : tu dis à Claude "crée-moi un carrousel leadership" — Claude voit ta plateforme comme un outil disponible, la pilote tout seul, appelle les mêmes API derrière. Les API ne changent pas. Tu ajoutes juste un connecteur.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-gray" onclick="toggleCard(this)">
+        <div class="cc-tag">🔐 Identité</div>
+        <h3>Authentification (Auth)</h3>
+        <p>Mécanisme qui vérifie l'identité d'un utilisateur. Sessions, JWT, cookies — tout ça pour savoir que c'est bien toi qui te connectes.</p>
+        <div class="cc-example">Supabase Auth gère tout ça automatiquement. OAuth = se connecter avec Google ou GitHub plutôt qu'un mot de passe maison.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PUBLICATION ═══════════ -->
+<section id="publication">
+  <div class="container">
+    <div class="section-label">Couche finale</div>
+    <h2>Publication & argent</h2>
+    <p class="section-intro">Les couches qui rendent ton app accessible au monde et qui permettent d'en vivre.</p>
+    <div class="concepts-grid">
+
+      <div class="concept-card cc-purple" onclick="toggleCard(this)">
+        <div class="cc-tag">🚀 Hébergement</div>
+        <h3>Vercel</h3>
+        <p>Un hébergeur automatique. Tu sauvegardes ton code sur GitHub, Vercel détecte le changement et publie ton site en quelques secondes. DNS, sécurité, serveurs — il gère tout en arrière-plan. Tu ne touches à rien.</p>
+        <div class="cc-example">Tu modifies une page → git push → Vercel détecte → reconstruit → publie. Ton site est à jour en moins d'une minute. Sans toucher à un seul paramètre serveur.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-purple" onclick="toggleCard(this)">
+        <div class="cc-tag">🌐 Adresse</div>
+        <h3>Nom de domaine & DNS</h3>
+        <p>L'adresse lisible par un humain : monsite.com. Le DNS traduit ce nom en adresse IP. Un domaine se loue (renouvellement annuel).</p>
+        <div class="cc-example">Tu achètes cabinet-dr-martin.fr chez un registrar, tu le relies à Vercel via des enregistrements DNS. 10 minutes de config, valable un an.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">💳 Paiement</div>
+        <h3>Stripe</h3>
+        <p>Plateforme de paiement : paiements ponctuels, abonnements, parcours hébergés. Terminal + caisse + logique de facturation réunis.</p>
+        <div class="cc-example">Une page Checkout qui laisse un client payer ou démarrer un abonnement mensuel. Retour vers ta page de succès, mise à jour de la base de données.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+      <div class="concept-card cc-coral" onclick="toggleCard(this)">
+        <div class="cc-tag">👁 Tracking</div>
+        <h3>Pixel Meta</h3>
+        <p>Un bout de code JavaScript qu'on installe sur son site pour envoyer des données à Meta (Facebook & Instagram). Il observe ce que font les visiteurs — pages vues, clics, achats — et renvoie ces infos à Meta pour que tes publicités soient ciblées au millimètre.</p>
+        <div class="cc-example">Un visiteur arrive sur ton site, ajoute un produit au panier mais n'achète pas → le Pixel le signale à Meta → Meta lui reshow ta pub le lendemain sur Instagram. C'est le retargeting.</div>
+        <div class="cc-toggle">▾ Exemple</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CONFUSIONS ═══════════ -->
+<section id="confusions">
+  <div class="container">
+    <div class="section-label">Attention</div>
+    <h2>Les 5 confusions à ne plus faire</h2>
+    <p class="section-intro">Ces erreurs de vocabulaire sont les plus fréquentes chez les débutants.</p>
+    <div class="confusions">
+      <div class="confusion-row">
+        <div class="confusion-wrong">MCP = une API concurrente</div>
+        <div class="confusion-arrow">→</div>
+        <div class="confusion-right">MCP standardise la façon dont un agent découvre des outils. Ces outils peuvent eux-mêmes appeler des API.</div>
+      </div>
+      <div class="confusion-row">
+        <div class="confusion-wrong">Slack = Stack</div>
+        <div class="confusion-arrow">→</div>
+        <div class="confusion-right">Slack = espace de travail pour parler. Stack = ensemble des technologies utilisées pour coder.</div>
+      </div>
+      <div class="confusion-row">
+        <div class="confusion-wrong">Pixel = résolution d'un écran</div>
+        <div class="confusion-arrow">→</div>
+        <div class="confusion-right">Le Pixel Meta c'est un code JS installé sur ton site qui envoie des données à Facebook/Instagram pour optimiser tes pubs.</div>
+      </div>
+      <div class="confusion-row">
+        <div class="confusion-wrong">Git = GitHub</div>
+        <div class="confusion-arrow">→</div>
+        <div class="confusion-right">Git = la mémoire de ce que tu construis. GitHub = cette même mémoire sauvegardée en ligne.</div>
+      </div>
+      <div class="confusion-row">
+        <div class="confusion-wrong">API = Webhook</div>
+        <div class="confusion-arrow">→</div>
+        <div class="confusion-right">Avec une API, TU interroges. Avec un webhook, C'EST LE SERVICE qui t'appelle quand quelque chose se passe.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CHECKLIST ═══════════ -->
+<section id="checklist">
+  <div class="container">
+    <div class="section-label">Partir de zéro</div>
+    <h2>La checklist des 10 étapes</h2>
+    <p class="section-intro">Clique sur chaque étape pour la cocher. C'est le chemin le plus simple pour lancer un projet web avec l'IA.</p>
+    <div class="checklist">
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">1</div>
+        <div class="check-content">
+          <strong>Rédige un prompt clair décrivant ton produit</strong>
+          <span>Outil : Claude / GPT</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">2</div>
+        <div class="check-content">
+          <strong>Laisse l'IA générer une première version</strong>
+          <span>Claude chat écrit le code, tu le colles dans ton éditeur — ou Claude Code génère directement les fichiers sur ton ordinateur.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">3</div>
+        <div class="check-content">
+          <strong>Initialise un dépôt Git et publie-le sur GitHub</strong>
+          <span>Claude Code fait tout ça pour toi en une instruction — ou Claude chat te donne les commandes à taper. Toi tu as juste à créer un compte GitHub.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">4</div>
+        <div class="check-content">
+          <strong>Construis le frontend et le backend</strong>
+          <span>Claude chat écrit le code, tu le colles — ou Claude Code le fait directement dans tes fichiers. Toi tu pilotes : tu sais où on va.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">5</div>
+        <div class="check-content">
+          <strong>Stocke tes données dans une base managée</strong>
+          <span>Claude chat écrit le schéma et le code de connexion — ou Claude Code fait tout pour toi, y compris se connecter à Supabase directement. Toi tu as créé le projet Supabase.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">6</div>
+        <div class="check-content">
+          <strong>Configure tes secrets en variables d'environnement</strong>
+          <span>Claude te dit exactement quoi écrire. Mais les vraies clés secrètes, c'est toi qui les colles — Claude ne doit jamais les voir.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">7</div>
+        <div class="check-content">
+          <strong>Connecte GitHub à Vercel pour le déploiement automatique</strong>
+          <span>Tu le fais toi-même en cliquant dans Vercel — ou tu demandes à Claude Code de configurer ça pour toi. Dans les deux cas, c'est 5 minutes.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">8</div>
+        <div class="check-content">
+          <strong>Relie un nom de domaine lisible</strong>
+          <span>Tu enregistres le domaine toi-même (un humain doit payer 😄) — Claude Code configure les DNS et relie tout à Vercel.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">9</div>
+        <div class="check-content">
+          <strong>Intègre Stripe pour encaisser</strong>
+          <span>Claude chat écrit le code d'intégration — ou Claude Code le fait directement dans ton projet. Toi tu as créé le compte Stripe et tu as les clés.</span>
+        </div>
+      </div>
+      <div class="check-item" onclick="this.classList.toggle('done')">
+        <div class="check-num">10</div>
+        <div class="check-content">
+          <strong>Configure les webhooks Stripe pour réagir aux événements</strong>
+          <span>Claude chat ou Claude Code écrit le code qui reçoit les événements. La configuration finale dans le dashboard Stripe : tu la fais manuellement, ou tu demandes à Claude Code.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Guide de l'écosystème IA & Web · Créé avec Claude (Anthropic)</p>
+  <p style="margin-top:6px;font-size:11px;opacity:0.6;">Ouvre ce fichier dans n'importe quel navigateur · Aucune connexion Internet nécessaire</p>
+</footer>
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <button class="tt-close" onclick="closeTip()">×</button>
+  <div class="tt-title" id="tt-title"></div>
+  <div id="tt-body"></div>
+</div>
+
+<script>
+  // Tooltip
+  function showTip(title, body) {
+    document.getElementById('tt-title').textContent = title;
+    document.getElementById('tt-body').textContent = body;
+    const el = document.getElementById('tooltip');
+    el.style.display = 'block';
+    clearTimeout(el._timer);
+    el._timer = setTimeout(closeTip, 7000);
+  }
+  function closeTip() {
+    document.getElementById('tooltip').style.display = 'none';
+  }
+
+  // Card expand
+  function toggleCard(card) {
+    card.classList.toggle('expanded');
+    const toggle = card.querySelector('.cc-toggle');
+    toggle.textContent = card.classList.contains('expanded') ? '▴ Fermer' : '▾ Exemple';
+  }
+
+  // Active nav
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+
+</body>
+</html>
